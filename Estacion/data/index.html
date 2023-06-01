@@ -1,0 +1,95 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <style>
+    body {
+      min-width: 310px;
+      max-width: 1200px;
+      height: 400px;
+      margin: 0 auto;
+    }
+    #chart-accelerations {
+    height: 500px;
+    }
+
+    h2 {
+      font-family: Arial;
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    #info-segment {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  </style>
+</head>
+<body>
+  <h2>Aceleracion</h2>
+  <div id="chart-accelerations" class="container"></div>
+  <div id="info-segment" class="container"></div>
+
+</body>
+<script>
+var chartT = new Highcharts.Chart({
+  chart: { renderTo: 'chart-accelerations' },
+  title: { text: '' },
+  series: [{
+    name: 'Aceleracion X',
+    data: []
+  }, {
+    name: 'Aceleracion Y',
+    data: []
+  }, {
+    name: 'Aceleracion Z',
+    data: []
+  }],
+  plotOptions: {
+    line: {
+      animation: false,
+      dataLabels: { enabled: false }
+    }
+  },
+  xAxis: {
+    type: 'datetime',
+    dateTimeLabelFormats: { second: '%H:%M:%S' }
+  },
+  yAxis: {
+    title: { text: 'Aceleracion' }
+  },
+  credits: { enabled: false }
+});
+setInterval(function() {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      var x = (new Date()).getTime();
+      var data = JSON.parse(this.responseText);
+      var aceleracionX = parseFloat(data.acceleracionX);
+      var aceleracionY = parseFloat(data.acceleracionY);
+      var aceleracionZ = parseFloat(data.acceleracionZ);
+      chartT.series[0].addPoint([x, aceleracionX], true, chartT.series[0].data.length > 50, true);
+      chartT.series[1].addPoint([x, aceleracionY], true, chartT.series[1].data.length > 50, true);
+      chartT.series[2].addPoint([x, aceleracionZ], true, chartT.series[2].data.length > 50, true);
+
+      var latitude = data.latitude;
+      var longitude = data.longitude;
+      var altitude = data.altitude;
+      var time = new Date(data.time).toUTCString();
+      //var time = new Date(data.time).toLocaleString();
+      
+      var infoSegment = document.getElementById("info-segment");
+      infoSegment.innerHTML = "Latitude: " + latitude + "<br>Longitude: " + longitude + "<br>Altitude: " + altitude + "<br>Time: " + time;
+
+
+
+    }
+  };
+  xhttp.open("GET", "/accelerations", true);
+  xhttp.send();
+}, 10000);
+</script>
+</html>
