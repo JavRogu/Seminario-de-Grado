@@ -14,16 +14,16 @@ String url = "https://hyfdlfwcammsfnrexcqe.supabase.co/rest/v1/Datos";
 String apikey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5ZmRsZndjYW1tc2ZucmV4Y3FlIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODU0MTA3NDMsImV4cCI6MjAwMDk4Njc0M30.t-dpApRpyn7CVXrr1ktWHf3lkT0fGzBrQK_uLcV3nrc";
 int id = 2;
 
-//APIRestESP32 apiRest(url, apikey);
-
 AsyncWebServer server(80);
 
+TinyGPSPlus gps;
 #define RXD2 16
 #define TXD2 17
 HardwareSerial neogps(1);
+
 char datoCmd = 0;
 
-TinyGPSPlus gps;
+
 
 unsigned long previousTime = 0;
 
@@ -38,13 +38,13 @@ int minuto = 0;
 int segundo = 0;
 String DateTime;
 
-const char* ssid = "Rojas"; //"Redmi Note 8";
-const char* password = "1998jav06"; //"jav199806";
+const char* ssid = "Redmi Note 8";
+const char* password = "jav199806";
 
 // Pin analógico al que está conectado el acelerómetro
 const int PIN_X = 34;
 const int PIN_Y = 35;
-const int PIN_Z = 32;//13;
+const int PIN_Z = 32;
 
 // Sensibilidad del acelerómetro según el rango
 const float sensibilidad = 1000.0; // 1000mV/g para el rango de +-2g
@@ -53,7 +53,9 @@ const float sensibilidad = 1000.0; // 1000mV/g para el rango de +-2g
 // Rango máximo de la conversión analógica a digital (12 bits)
 const int escala = 4095;
 
+//Funcion encargada de generar el JSON de respuesta para el servidor web
 String readAccelerations() {
+  
   // Obtener los valores de aceleración en los ejes X, Y y Z
   float accelerationX = calcularAceleracion(PIN_X, sensibilidad, escala);
   float accelerationY = calcularAceleracion(PIN_Y, sensibilidad, escala);
@@ -61,10 +63,9 @@ String readAccelerations() {
   latitud = gps.location.lat();
   longitud = gps.location.lng();
   altitud = gps.altitude.meters();
-  //int fecha = gps.date.value();
-  //int hora = gps.time.value();
-  String fechaHora = String(gps.date.year()) + "-" + twoDigits(gps.date.month()) + "-" + twoDigits(gps.date.day()) +
-                             "T" + twoDigits(gps.time.hour()) + ":" + twoDigits(gps.time.minute()) + ":" + twoDigits(gps.time.second()) + "Z";
+  String fechaHora = String(gps.date.year()) + "-" + twoDigits(gps.date.month()) + 
+                            "-" + twoDigits(gps.date.day()) + "T" + twoDigits(gps.time.hour()) + 
+                            ":" + twoDigits(gps.time.minute()) + ":" + twoDigits(gps.time.second()) + "Z";
 
   // Crear un objeto JSON con los datos de aceleración
   StaticJsonDocument<200> jsonDoc;
@@ -90,13 +91,13 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Starting GPS");
   neogps.begin(9600, SERIAL_8N1, RXD2, TXD2);
+
+  conectarWiFi(ssid, password);
   
   if(!SPIFFS.begin()){
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
-  conectarWiFi(ssid, password);
-  
   
 
   Serial.println("Starting Webserver");
@@ -159,9 +160,10 @@ void loop() {
         Serial.println(gps.satellites.value());
 
         // Generar string con formato ISO 8601 para fecha y hora
-        DateTime = String(gps.date.year()) + "-" + twoDigits(gps.date.month()) + "-" + twoDigits(gps.date.day()) +
-                             "T" + twoDigits(gps.time.hour()) + ":" + twoDigits(gps.time.minute()) + ":" + twoDigits(gps.time.second()) + "Z";
-        Serial.print("Fecha y hora (ISO 8601): ");
+        DateTime = String(gps.date.year()) + "-" + twoDigits(gps.date.month()) + 
+                          "-" + twoDigits(gps.date.day()) + "T" + twoDigits(gps.time.hour()) + 
+                          ":" + twoDigits(gps.time.minute()) + ":" + twoDigits(gps.time.second()) + "Z";
+        Serial.print("Fecha y hora: ");
         Serial.println(DateTime);
 
         Serial.println("---------------------------");
