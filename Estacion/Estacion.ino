@@ -1,7 +1,6 @@
 #include "aceleracion.h"
 #include <WiFi.h>
 #include "wifi_helper.h"
-#include "api_rest_esp32.h"
 #include <AsyncTCP.h>
 #include <ESPAsyncWebSrv.h>
 #include "MyHttpClient.h"
@@ -16,10 +15,11 @@ int id = 2;
 
 AsyncWebServer server(80);
 
-TinyGPSPlus gps;
+
 #define RXD2 16
 #define TXD2 17
 HardwareSerial neogps(1);
+TinyGPSPlus gps;
 
 char datoCmd = 0;
 
